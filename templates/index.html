@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Погода и Новости</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col text-center">
+            <h1>🌦️ Погода, Новости и Цитата дня</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Погода -->
+        <div class="col-md-2">
+            <form method="post" action="/" class="mb-3">
+                <div class="input-group">
+                    <input type="text" name="city" class="form-control" placeholder="Город" required>
+                    <button type="submit" class="btn btn-primary">OK</button>
+                </div>
+            </form>
+
+            {% if weather %}
+                {% if weather.get('cod') == 200 %}
+                    <div class="card p-3 shadow-sm">
+                        <h5>{{ weather.name }}</h5>
+                        <p>{{ weather.weather[0].description }}</p>
+                        <p>{{ (weather.main.temp - 273.15) | round(1) }} °C</p>
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger mt-2">Город не найден</div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Новости -->
+        <div class="col-md-6">
+            <h4 class="mb-3">📰 Последние новости</h4>
+            {% if news %}
+                <ul class="list-group">
+                    {% for article in news %}
+                        <li class="list-group-item">
+                            <a href="{{ article.link }}" target="_blank">{{ article.title }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Новости не найдены.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Цитата (только динамическая) -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8 text-center">
+            <figure class="blockquote" id="quote-block" style="transition: opacity 0.8s;">
+                <blockquote class="blockquote">
+                    <p id="quote-text">Загрузка цитаты...</p>
+                </blockquote>
+                <figcaption class="blockquote-footer" id="quote-author">
+                    ...
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для обновления цитаты -->
+<script>
+    async function updateQuote() {
+        const block = document.getElementById('quote-block');
+        block.style.opacity = 0;
+
+        setTimeout(async () => {
+            try {
+                const response = await fetch('/quote');
+                const data = await response.json();
+
+                document.getElementById('quote-text').textContent = `"${data.quote}"`;
+                document.getElementById('quote-author').textContent = data.author;
+                block.style.opacity = 1;
+            } catch (error) {
+                document.getElementById('quote-text').textContent = "Ошибка загрузки цитаты";
+                document.getElementById('quote-author').textContent = "";
+                block.style.opacity = 1;
+            }
+        }, 800);
+    }
+
+    // первая загрузка + каждые 10 секунд
+    updateQuote();
+    setInterval(updateQuote, 20000);
+</script>
+
+</body>
+</html>
