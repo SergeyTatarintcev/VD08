@@ -66,7 +66,7 @@ def get_news():
 
 def get_quote():
     api_url = 'https://api.api-ninjas.com/v1/quotes'
-    api_key = os.getenv("NINJA_QUOTES_API_KEY")
+    api_key = 'YJ4zrzWxAiYqFsMdtLoUTw==NLM8SCEVGKjcuVIh'
 
     try:
         response = requests.get(api_url, headers={'X-Api-Key': api_key}, timeout=5)
@@ -75,14 +75,16 @@ def get_quote():
             if data:
                 quote = data[0]['quote']
                 author = data[0]['author']
+
+                # Перевод на русский
                 translator = Translator()
                 translated_text = translator.translate(quote, dest='ru').text
+
                 return translated_text, author
     except Exception as e:
         print("❌ Ошибка цитаты:", e)
 
     return "Цитата не найдена", "Неизвестный автор"
-
 
 
 if __name__ == '__main__':
